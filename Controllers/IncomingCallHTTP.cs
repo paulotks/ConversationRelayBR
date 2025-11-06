@@ -15,8 +15,10 @@ namespace ConversartionRelayBR.Controllers
 
             var conversationRelay = new ConversationRelay(
                 url: "wss://telma-unswitched-walton.ngrok-free.dev/websocket",
-                welcomeGreeting: "Bem vindo ao canal de atendimento da FGR, Este é um canal em desenvolvimento. Obrigado por ligar",
-                language: "pt-BR"
+                welcomeGreeting: "Obrigado por entrar em contato com a FGR Incorporações.Em poucas palavras, me diga o motivo do seu contato… Ou aguarde para ouvir as opções.",
+                language:"pt-BR",
+                ttsProvider:"ElevenLabs",
+                voice: "m151rjrbWXbBqyq56tly"
                 );
 
             //conversationRelay.Hints = "FGR,atendimento,conta corrente,poupança,cartão,empréstimo,financiamento,PIX,transferência,saldo,extrato,segunda via,cancelamento,bloqueio,desbloqueio,por favor,obrigada,com licença,desculpa,problema,dúvida,informação";

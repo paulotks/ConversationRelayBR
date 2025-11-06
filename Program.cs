@@ -1,9 +1,12 @@
+using ConversartionRelayBR.Services;
 using Twilio;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddSingleton<WebSocketService>();
+builder.Services.AddScoped<ConversationService>();
 
 var app = builder.Build();
 
@@ -41,9 +44,12 @@ app.Map("/websocket", async (HttpContext context) =>
 {
     if (context.WebSockets.IsWebSocketRequest)
     {
-        Console.WriteLine("Chegou no WebSocket");
+        Console.WriteLine("Nova conexão WebSocket");
+
+        var webSocketService = app.Services.GetRequiredService<WebSocketService>();
+
         using var websocket = await context.WebSockets.AcceptWebSocketAsync();
-        await HandleWebSocketConnection(websocket);
+        await HandleWebSocketConnection(websocket, webSocketService);
     }
     else
     {
@@ -53,9 +59,12 @@ app.Map("/websocket", async (HttpContext context) =>
 
 app.Run();
 
-static async Task HandleWebSocketConnection(System.Net.WebSockets.WebSocket webSocket)
+static async Task HandleWebSocketConnection(System.Net.WebSockets.WebSocket webSocket, WebSocketService webScocketService)
 {
+    var conversationService = new ConversationService(webScocketService);
     var buffer = new byte[1024 * 4];
+
+    Console.WriteLine("Aguardando Mensagens da Twilio...");
 
     while (webSocket.State == System.Net.WebSockets.WebSocketState.Open)
     {
@@ -66,15 +75,8 @@ static async Task HandleWebSocketConnection(System.Net.WebSockets.WebSocket webS
             var message = System.Text.Encoding.UTF8.GetString(buffer, 0, result.Count);
             Console.WriteLine($"RecebidoTwilio: {message}");
 
-            //var response = "Echo: " + message;
-            //var responseBytes = System.Text.Encoding.UTF8.GetBytes(response);
+            await conversationService.ProcessMessageAsync(webSocket, message);
 
-            //await webSocket.SendAsync(
-            //    new ArraySegment<byte>(responseBytes),
-            //    System.Net.WebSockets.WebSocketMessageType.Text,
-            //    true,
-            //    CancellationToken.None
-            //    );
         }
         else if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Close)
         {
