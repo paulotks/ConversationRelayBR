@@ -18,7 +18,9 @@ namespace ConversartionRelayBR.Controllers
                 welcomeGreeting: "Obrigado por entrar em contato com a FGR Incorporações.Em poucas palavras, me diga o motivo do seu contato… Ou aguarde para ouvir as opções.",
                 language:"pt-BR",
                 ttsProvider:"ElevenLabs",
-                voice: "m151rjrbWXbBqyq56tly"
+                voice: "m151rjrbWXbBqyq56tly-1.1_0.8_0.6",
+                dtmfDetection: true,
+                hints: "FGR,boletos,vencidos,Jardins,relacionamento,cliente,extratos,pagamentos,vendas,corretor,stande,assistência,técnica,condomínios,horizontais,incorporações"
                 );
 
             //conversationRelay.Hints = "FGR,atendimento,conta corrente,poupança,cartão,empréstimo,financiamento,PIX,transferência,saldo,extrato,segunda via,cancelamento,bloqueio,desbloqueio,por favor,obrigada,com licença,desculpa,problema,dúvida,informação";

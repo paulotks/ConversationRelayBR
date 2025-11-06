@@ -30,6 +30,7 @@ namespace ConversartionRelayBR.Services
                 {
                     "setup" => JsonSerializer.Deserialize<SetupMessage>(jsonMessage, _jsonOptions),
                     "prompt" => JsonSerializer.Deserialize<PromptMessage>(jsonMessage, _jsonOptions),
+                    "dtmf" => JsonSerializer.Deserialize<DtmfMessage>(jsonMessage, _jsonOptions),
                     _ => null
                 };
             }

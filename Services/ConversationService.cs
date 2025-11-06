@@ -1,4 +1,5 @@
-﻿using ConversartionRelayBR.Models.WebSocket.Incoming;
+﻿using ConversartionRelayBR.Models.Enums;
+using ConversartionRelayBR.Models.WebSocket.Incoming;
 using ConversartionRelayBR.Models.WebSocket.Outgoing;
 using System.Net.WebSockets;
 
@@ -9,6 +10,9 @@ namespace ConversartionRelayBR.Services
         private readonly WebSocketService _webSocketService = webSocketService;
         private string? _sessionId;
         private string? _callSid;
+        private CallFlowState _currentState = CallFlowState.Initial;
+        private int _attemptCount = 0;
+        private Timer? _waitTimer;
 
         //public ConversationService(WebSocketService webSocketService)
         //{
@@ -33,6 +37,9 @@ namespace ConversartionRelayBR.Services
                 case PromptMessage prompt:
                     await HandlePromptAsync(webSocket, prompt);
                     break;
+                case DtmfMessage dtmf:
+                    await HandleDtmfAsync(webSocket, dtmf);
+                    break;
                 default:
                     Console.WriteLine($"Tipo de mensagem não implementado: {incomingMessage.Type}");
                     break;
@@ -46,27 +53,99 @@ namespace ConversartionRelayBR.Services
             Console.WriteLine($"Nova chamada conectada - CallSid: {setup.CallSid}");
             Console.WriteLine($"De: {setup.From} Para: {setup.To}");
 
-            var welcomeMessage = new TextMessage {
-                Token = "Olá! Você está conectado ao nosso sistema de atendimento. Como posso ajudá-lo hoje?",
-            };
+            //var welcomeMessage = new TextMessage {
+            //    Token = "Olá! Você está conectado ao nosso sistema de atendimento. Como posso ajudá-lo hoje?",
+            //};
 
-            await _webSocketService.SendMessageAsync(webSocket, welcomeMessage);
+            //await _webSocketService.SendMessageAsync(webSocket, welcomeMessage);
+
+            Console.WriteLine($"⏰ Iniciando timer de 8 segundos - Estado: {_currentState}");
+            StartWaitTimer(webSocket, 20000); //8 segundos
         }
 
         private async Task HandlePromptAsync(WebSocket webSocket, PromptMessage prompt)
         {
             Console.WriteLine($"Cliente Falou: '{prompt.Text}' (Idioma: {prompt.Language})");
 
-            var responseText = GenerateResponse(prompt.Text);
+            _waitTimer?.Dispose();
 
-            var responseMessage = new TextMessage
+            var intent = AnalyzeUserIntent(prompt.Text);
+
+            if (intent != null)
             {
-                Token = responseText,
-            };
+                await ProcessValidIntentAsync(webSocket, intent.Value);
+            } else
+            {
+                await HandleUnrecognizedInputAsync(webSocket);
+            }
 
-            await _webSocketService.SendMessageAsync(webSocket, responseMessage);
+            //var responseText = GenerateResponse(prompt.Text);
+
+            //var responseMessage = new TextMessage
+            //{
+            //    Token = responseText,
+            //};
+
+            //await _webSocketService.SendMessageAsync(webSocket, responseMessage);
         }
 
+        private async Task HandleDtmfAsync(WebSocket webSocket, DtmfMessage dtmf)
+        {
+            Console.WriteLine($"Cliente pressionou a tecla: {dtmf.Digit}");
+
+            if (int.TryParse(dtmf.Digit, out int digit) && Enum.IsDefined(typeof(IvrOption), digit))
+            {
+                var option = (IvrOption)int.Parse(dtmf.Digit);
+                await ProcessValidIntentAsync(webSocket, option);
+            }
+            else
+            {
+                var responseMessage = new TextMessage
+                {
+                    Token = "Opção inválida. Por favor, pressione uma tecla de 1 a 5."
+                };
+                await _webSocketService.SendMessageAsync(webSocket, responseMessage);
+                //await ShowOptionsAsync(webSocket);
+            }
+        }
+        private IvrOption? AnalyzeUserIntent(string userInput)
+        {
+            var input = userInput.ToLowerInvariant();
+
+            return input switch
+            {
+                var text when text.Contains("extrato") || text.Contains("boleto") || text.Contains("pagamento")
+                    => IvrOption.BoletosVencidos,
+                var text when text.Contains("relacionamento") || text.Contains("cliente") || text.Contains("reclamação")
+                    => IvrOption.RelacionamentoCliente,
+                var text when text.Contains("comercial") || text.Contains("vendas") || text.Contains("comprar")
+                    => IvrOption.StandeVendas,
+                var text when text.Contains("assistência") || text.Contains("técnica") || text.Contains("problema") || text.Contains("manutenção")
+                    => IvrOption.AssistenciaTecnica,
+                var text when text.Contains("dúvida") || text.Contains("empreendimento") || text.Contains("informação") || text.Contains("projeto")
+                    => IvrOption.RelacionamentoCliente,
+                _ => null
+            };
+        }
+
+        private async Task ProcessValidIntentAsync(WebSocket webSocket, IvrOption intent)
+        {
+            var message = intent switch
+            {
+                IvrOption.BoletosVencidos => "Vou conectá-lo ao setor financeiro para questões sobre extrato e boletos. Aguarde um momento.",
+                IvrOption.RelacionamentoCliente => "Transferindo para o relacionamento com o cliente. Um momento, por favor.",
+                IvrOption.StandeVendas => "Conectando com nossa equipe comercial. Aguarde.",
+                IvrOption.AssistenciaTecnica => "Direcionando para assistência técnica. Um momento.",
+                IvrOption.ClienteCasasJardins => "Transferindo para o relacionamento com o cliente. Um momento, por favor.",
+            };
+            var responseMessage = new TextMessage { Token = message };
+            await _webSocketService.SendMessageAsync(webSocket, responseMessage);
+
+            // Simular transferência e finalizar
+            //await Task.Delay(2000);
+            //var endMessage = new EndMessage { Reason = $"Transferência para {intent}" };
+            //await _webSocketService.SendMessageAsync(webSocket, endMessage);
+        }
         private static string GenerateResponse(string userInput)
         {
             var input = userInput.ToLowerInvariant();
@@ -79,6 +158,67 @@ namespace ConversartionRelayBR.Services
                 var text when text.Contains("tchau") || text.Contains("obrigado") => "Foi um prazer atendê-lo! Tenha um ótimo dia!",
                 _ => "Entendi. Pode repetir ou me dar mais detalhes sobre sua solicitação?"
             };
+        }
+
+        private async Task HandleUnrecognizedInputAsync(WebSocket webSocket)
+        {
+            _attemptCount++;
+            if (_attemptCount == 1)
+            {
+                _currentState = CallFlowState.SecondChance;
+                var responseMessage = new TextMessage
+                {
+                    Token = "Desculpe, não consegui entender. Pode repetir o motivo do seu contato?",
+                };
+                await _webSocketService.SendMessageAsync(webSocket, responseMessage);
+                StartWaitTimer(webSocket, 12000); //12 segundos
+            } else
+            {
+                _currentState = CallFlowState.ShowingOptions;
+                await ShowOptionsAsync(webSocket);
+            }
+        }
+
+        private async Task ShowOptionsAsync(WebSocket webSocket)
+        {
+            var optionsMessage = new TextMessage
+            {
+                Token = "Por favor escolha uma das seguintes opções pressionando o número correspondente: " +
+                                "Pressione 1 para extrato e boletos, " +
+                                "2 para relacionamento com o cliente, " +
+                                "3 para comercial, " +
+                                "4 para assistência técnica, " +
+                                "ou 5 para dúvidas sobre empreendimentos."
+            };
+
+            await _webSocketService.SendMessageAsync(webSocket, optionsMessage);
+            _currentState = CallFlowState.WaitingDTMF;
+        }
+
+        private void StartWaitTimer(WebSocket webSocket, int millisecondsDelay)
+        {
+            _waitTimer = new Timer(async _ => await OnWaitTimeoutAsync(webSocket), null, millisecondsDelay, Timeout.Infinite);
+        }
+
+        private async Task OnWaitTimeoutAsync(WebSocket webSocket)
+        {
+            Console.WriteLine($"⏰ TIMEOUT! Estado: {_currentState}, Tentativas: {_attemptCount}");
+            if (_currentState == CallFlowState.Initial)
+            {
+                _currentState = CallFlowState.SecondChance;
+
+                var responseMessage = new TextMessage
+                {
+                    Token = "Não consegui ouvir sua resposta. Pode me dizer novamente o motivo do seu contato?",
+                };
+
+                await _webSocketService.SendMessageAsync(webSocket, responseMessage);
+                StartWaitTimer(webSocket, 15000); //15 segundos
+            }
+            else if (_currentState == CallFlowState.SecondChance)
+            {
+                await ShowOptionsAsync(webSocket);
+            }
         }
     }
 }
