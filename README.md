@@ -87,7 +87,6 @@ Paulin fica ligeiro
 - Melhorar tratamento de erros
 - Documentar API com Swagger
 - Configurar CI/CD
-- Implementar painel administrativo para monitoramento
 - Melhorar UX do menu IVR
 
 ### Novas Funcionalidades
@@ -100,3 +99,4 @@ Paulin fica ligeiro
 - Implementar análise de dados para melhorar o atendimento
 - Adicionar suporte a campanhas de marketing via voz
 - Implementar sistema de autenticação por voz para segurança
+- Implementar painel administrativo para monitoramento
