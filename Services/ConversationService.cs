@@ -202,7 +202,7 @@ namespace ConversartionRelayBR.Services
 
         private async Task OnWaitTimeoutAsync(WebSocket webSocket)
         {
-            Console.WriteLine($"⏰ TIMEOUT! Estado: {_currentState}, Tentativas: {_attemptCount}");
+            Console.WriteLine($"TIMEOUT Estado: {_currentState}, Tentativas: {_attemptCount}");
             if (_currentState == CallFlowState.Initial)
             {
                 _currentState = CallFlowState.SecondChance;

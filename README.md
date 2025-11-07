@@ -78,3 +78,25 @@ project-root/
 
 ## Licença
 Paulin fica ligeiro
+
+## Todo
+## Demandas Tecnicas
+- Implemmentar autenticação com a Twilio
+- Implementar logs detalhados
+- Adicionar testes unitários
+- Melhorar tratamento de erros
+- Documentar API com Swagger
+- Configurar CI/CD
+- Implementar painel administrativo para monitoramento
+- Melhorar UX do menu IVR
+
+## Novas Funcionalidades
+- Adicionar suporte a múltiplos idiomas
+- Adicionar integração com CRM
+- Implementar fallback para chamadas perdidas
+- Adicionar suporte a gravação de chamadas
+- Implementar análise de sentimentos na fala do cliente
+- Adicionar suporte a chamadas internacionais
+- Implementar análise de dados para melhorar o atendimento
+- Adicionar suporte a campanhas de marketing via voz
+- Implementar sistema de autenticação por voz para segurança
