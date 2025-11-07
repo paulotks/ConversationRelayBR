@@ -80,7 +80,7 @@ project-root/
 Paulin fica ligeiro
 
 ## Todo
-## Demandas Tecnicas
+### Demandas Tecnicas
 - Implemmentar autenticação com a Twilio
 - Implementar logs detalhados
 - Adicionar testes unitários
@@ -90,7 +90,7 @@ Paulin fica ligeiro
 - Implementar painel administrativo para monitoramento
 - Melhorar UX do menu IVR
 
-## Novas Funcionalidades
+### Novas Funcionalidades
 - Adicionar suporte a múltiplos idiomas
 - Adicionar integração com CRM
 - Implementar fallback para chamadas perdidas
