@@ -174,17 +174,14 @@ namespace ConversartionRelayBR.Services
         private async Task OnWaitTimeoutAsync(WebSocket webSocket)
         {
             Console.WriteLine($"TIMEOUT Estado: {_currentState}, Tentativas: {_attemptCount}");
-            if (_currentState == CallFlowState.Initial)
+            
+            var responseMessage = new TextMessage
             {
-                var responseMessage = new TextMessage
-                {
-                    Token = "Não consegui ouvir sua resposta.",
-                };
+                Token = "Não consegui entender sua solicitação.",
+            };
 
-                await _webSocketService.SendMessageAsync(webSocket, responseMessage);
-                await ShowOptionsAsync(webSocket);
-
-            }
+            await _webSocketService.SendMessageAsync(webSocket, responseMessage);
+            await ShowOptionsAsync(webSocket);
         }
     }
 }
