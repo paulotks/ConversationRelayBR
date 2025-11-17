@@ -73,7 +73,7 @@ static async Task HandleWebSocketConnection(System.Net.WebSockets.WebSocket webS
         if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Text)
         {
             var message = System.Text.Encoding.UTF8.GetString(buffer, 0, result.Count);
-            Console.WriteLine($"RecebidoTwilio: {message}");
+            //Console.WriteLine($"RecebidoTwilio: {message}");
 
             await conversationService.ProcessMessageAsync(webSocket, message);
 

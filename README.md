@@ -77,26 +77,41 @@ project-root/
 - **WS /websocket** - Conexão WebSocket para mensagens
 
 ## Licença
-Paulin fica ligeiro
+Paulo Eduardo Furtado Lopes
 
 ## Todo
-### Demandas Tecnicas
+### Necessidade Técnicas
 - Implemmentar autenticação com a Twilio
+- Se Fluxo aprovado
+- - Implementar redirecionamento das chamadas
+
+
+### Demandas Tecnicas
 - Implementar logs detalhados
 - Adicionar testes unitários
 - Melhorar tratamento de erros
-- Documentar API com Swagger
-- Configurar CI/CD
-- Melhorar UX do menu IVR
+- Documentar API
+- Melhorar UX do menu IVR (Aguardar validação com cliente)
 
-### Novas Funcionalidades
+### Deploy (Disponibilizar em um servidor)
+- Deploy WebSocket
+- Configurar CI/CD
+
+
+### Perspectivas de Otimizações
 - Adicionar suporte a múltiplos idiomas
+- Adicionar suporte a chamadas internacionais
 - Adicionar integração com CRM
+- - Validar dados do cliente
+- - Automações (boleto, extrato, antecipação, agendamento de visita etc)
 - Implementar fallback para chamadas perdidas
 - Adicionar suporte a gravação de chamadas
 - Implementar análise de sentimentos na fala do cliente
-- Adicionar suporte a chamadas internacionais
-- Implementar análise de dados para melhorar o atendimento
+- Implementar análise de dados para melhorar o atendimento (Segunda etapa dos Logs)
 - Adicionar suporte a campanhas de marketing via voz
-- Implementar sistema de autenticação por voz para segurança
-- Implementar painel administrativo para monitoramento
+- Implementar sistema de autenticação por voz para segurança (Alta complexidade)
+- Implementar painel administrativo para monitoramento (alta complexidade)
+
+
+## Primeira fase
+
