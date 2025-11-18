@@ -13,7 +13,8 @@ namespace ConversartionRelayBR.Controllers
         {
             var response = new VoiceResponse();
             var connect = new Connect(
-                action: new Uri($"{Request.Scheme}://{Request.Host}/transfer")
+                action: new Uri($"{Request.Scheme}://{Request.Host}/transfer"),
+                method: Twilio.Http.HttpMethod.Post
                 );
 
             var conversationRelay = new ConversationRelay(
@@ -48,12 +49,41 @@ namespace ConversartionRelayBR.Controllers
             {
                 var url = GetQueueUrl((IvrOption)option);
 
-                response.Redirect(new Uri(url), method: Twilio.Http.HttpMethod.Post);
+                response.Redirect(
+                    method: Twilio.Http.HttpMethod.Post,
+                    url: new Uri(url)
+                );
             }
             else
             {
                 response.Hangup();
             }
+
+            return Content(response.ToString(), "application/xml");
+        }
+
+        [HttpGet("transfer")]
+        public IActionResult TransferGet([FromQuery] string? HandoffData)
+        {
+            var response = new VoiceResponse();
+
+            if (!string.IsNullOrEmpty(HandoffData) &&
+                int.TryParse(HandoffData, out int option) &&
+                Enum.IsDefined(typeof(IvrOption), option))
+            {
+                var url = GetQueueUrl((IvrOption)option);
+
+                response.Redirect(
+                    method: Twilio.Http.HttpMethod.Post,
+                    url: new Uri(url)
+                );
+            }
+            else
+            {
+                response.Hangup();
+            }
+
+            Console.WriteLine(response.ToString());
 
             return Content(response.ToString(), "application/xml");
         }
