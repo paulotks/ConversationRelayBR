@@ -9,7 +9,7 @@ namespace ConversartionRelayBR.Models.WebSocket.Outgoing
             Type = "end";
         }
 
-        [JsonPropertyName("reason")]
+        [JsonPropertyName("handoffData")]
         public string? Reason { get; set; }
     }
 }

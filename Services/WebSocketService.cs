@@ -46,6 +46,11 @@ namespace ConversartionRelayBR.Services
             return JsonSerializer.Serialize(message, _jsonOptions);
         }
 
+        public string SerializeEndSessionMessage(EndMessage message)
+        {
+            return JsonSerializer.Serialize(message, _jsonOptions);
+        }
+
         public async Task SendMessageAsync(WebSocket webSocket, TextMessage message)
         {
             var json = SerializeOutGoingMessage(message);
@@ -58,6 +63,20 @@ namespace ConversartionRelayBR.Services
                 );
 
             Console.WriteLine($"Mensagem enviada: {json}");
+        }
+
+        public async Task EndSessionMessageAsync(WebSocket webSocket, EndMessage endMessage)
+        {
+            var json = SerializeEndSessionMessage(endMessage);
+            var bytes = Encoding.UTF8.GetBytes(json);
+
+            await webSocket.SendAsync(new ArraySegment<byte>(bytes),
+                WebSocketMessageType.Text,
+                true,
+                CancellationToken.None
+                );
+
+            Console.WriteLine($"Mensagem de Encerramento enviada enviada: {json}");
         }
     }
 }

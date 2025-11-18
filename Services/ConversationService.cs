@@ -50,7 +50,7 @@ namespace ConversartionRelayBR.Services
             Console.WriteLine($"De: {setup.From} Para: {setup.To}");
             Console.WriteLine($"Iniciando timer de 8 segundos - Estado: {_currentState}");
 
-            StartWaitTimer(webSocket, 20000); //8 segundos
+            StartWaitTimer(webSocket, 19000); //8 segundos
 
             return Task.CompletedTask;
         }
@@ -58,6 +58,11 @@ namespace ConversartionRelayBR.Services
         private async Task HandlePromptAsync(WebSocket webSocket, PromptMessage prompt)
         {
             Console.WriteLine($"Cliente Falou: '{prompt.Text}' (Idioma: {prompt.Language})");
+
+            if (string.IsNullOrWhiteSpace(prompt.Text) || prompt.Text.Trim().Length < 3)
+            {
+                return; // NÃO cancela timer
+            }
 
             _waitTimer?.Dispose();
 
@@ -120,12 +125,22 @@ namespace ConversartionRelayBR.Services
                 IvrOption.StandeVendas => "Conectando com nossa equipe comercial. Aguarde.",
                 IvrOption.AssistenciaTecnica => "Direcionando para assistência técnica. Um momento.",
                 IvrOption.ClienteCasasJardins => "Transferindo para o relacionamento com o cliente. Um momento, por favor.",
+                _ => "Transferindo. Aguarde."
             };
             var responseMessage = new TextMessage { Token = message };
             await _webSocketService.SendMessageAsync(webSocket, responseMessage);
 
-            // Simular transferência e finalizar
+            await Task.Delay(1500);
 
+
+            var endMessage = new EndMessage
+            {
+                Reason = ((int)intent).ToString() // "1", "2", "3", etc
+            };
+
+            Console.WriteLine($"Encerrando sessão com motivo: {endMessage.Reason}");
+
+            await _webSocketService.EndSessionMessageAsync(webSocket, endMessage);
         }
 
         private async Task HandleUnrecognizedInputAsync(WebSocket webSocket)
@@ -151,16 +166,20 @@ namespace ConversartionRelayBR.Services
         {
             var optionsMessage = new TextMessage
             {
-                Token = "Por favor escolha uma das seguintes opções pressionando o número correspondente: " +
-                                "Pressione 1 para extrato e boletos, " +
-                                "2 para relacionamento com o cliente, " +
-                                "3 para comercial, " +
-                                "4 para assistência técnica, " +
-                                "ou 5 para dúvidas sobre empreendimentos."
+                Token = "Por favor escolha uma das opções a seguir pressionando o número correspondente:" +
+                " 1 para boletos vencidos." +
+                " 2 para informações sobre o seu empreendimento casas jardins." +
+                " 3 para relacionamento com o cliente incluindo boletos a vencer e extratos de pagamento." +
+                " 4 para o setor comercial para falar com nosso stand de vendas ou com um corretor." +
+                " 5 para assistência técnica. " +
+                " Se nenhuma dessas opções atender à sua necessidade, aguarde. Em instantes, um de nossos atendentes falará com você." +
+                "Ao longo de 36 anos, a FGR se tornou especialista em condomínios horizontais, e agora, com o projeto da construção de Casas nos Jardins, criamos o melhor lugar para as pessoas serem felizes. Para obter mais informações, acesse nosso site ou aplicativo FGR Jardins. FGR Incorporações, mudando vidas."
             };
 
             await _webSocketService.SendMessageAsync(webSocket, optionsMessage);
             _currentState = CallFlowState.WaitingDTMF;
+
+            StartWaitTimer(webSocket, 45000);
         }
 
         private void StartWaitTimer(WebSocket webSocket, int millisecondsDelay)
@@ -173,15 +192,20 @@ namespace ConversartionRelayBR.Services
 
         private async Task OnWaitTimeoutAsync(WebSocket webSocket)
         {
-            Console.WriteLine($"TIMEOUT Estado: {_currentState}, Tentativas: {_attemptCount}");
-            
-            var responseMessage = new TextMessage
+            switch (_currentState)
             {
-                Token = "Não consegui entender sua solicitação.",
-            };
+                case CallFlowState.Initial:
+                    await ShowOptionsAsync(webSocket);
+                    break;
 
-            await _webSocketService.SendMessageAsync(webSocket, responseMessage);
-            await ShowOptionsAsync(webSocket);
+                case CallFlowState.WaitingDTMF:
+                    await ProcessValidIntentAsync(webSocket, IvrOption.Recepcao);
+                    break;
+
+                default:
+                    await ProcessValidIntentAsync(webSocket, IvrOption.Recepcao);
+                    break;
+            }
         }
     }
 }
