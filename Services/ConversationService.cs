@@ -98,7 +98,7 @@ namespace ConversartionRelayBR.Services
             var input = userInput.ToLowerInvariant();
 
             // Opção 1: Boletos Vencidos (Financeiro/Cobrança)
-            if (ContainsAny(input, "boleto", "vencido","em aberto", "negociar", "renegociar", "parcelar", "vencimento", "pagamento", "pagar", "débito", "dívida", "cobrança", "financeiro", "extrato", "fatura"))
+            if (ContainsAny(input, "vencido", "renegociar", "débito"))
                 return IvrOption.BoletosVencidos;
 
             // Opção 2: Cliente Casas Jardins
@@ -111,7 +111,7 @@ namespace ConversartionRelayBR.Services
 
             // Opção 4: Stande de Vendas (Comercial/Comprar)
             if (ContainsAny(input, "comprar", "compra", "vendas", "venda", "comercial", "corretor", "stand", "stande", "adquirir", "aquisição", "interesse", "novo", "lançamento"))
-                return IvrOption.StandeVendas;
+                return IvrOption.StandVendas;
 
             // Opção 5: Assistência Técnica (Pós-entrega - Problemas/Manutenção)
             if (ContainsAny(input, "assistência", "chamado", "agendamento", "projetos", "danificado", "reforma", "elétrica", "técnica", "problema", "defeito", "manutenção", "reparo", "conserto", "quebrado", "vazamento", "infiltração", "pós-entrega", "pós entrega"))
@@ -128,7 +128,7 @@ namespace ConversartionRelayBR.Services
                 return IvrOption.RelacionamentoCliente;
 
             if (ContainsAny(input, "quatro", "número quatro", "opção quatro", "4"))
-                return IvrOption.StandeVendas;
+                return IvrOption.StandVendas;
 
             if (ContainsAny(input, "cinco", "número cinco", "opção cinco", "5"))
                 return IvrOption.AssistenciaTecnica;
@@ -151,7 +151,7 @@ namespace ConversartionRelayBR.Services
             {
                 IvrOption.BoletosVencidos => "Vou conectá-lo ao setor financeiro para questões sobre extrato e boletos. Aguarde um momento.",
                 IvrOption.RelacionamentoCliente => "Transferindo para o relacionamento com o cliente. Um momento, por favor.",
-                IvrOption.StandeVendas => "Conectando com nossa equipe comercial. Aguarde.",
+                IvrOption.StandVendas => "Conectando com nossa equipe comercial. Aguarde.",
                 IvrOption.AssistenciaTecnica => "Direcionando para assistência técnica. Um momento.",
                 IvrOption.ClienteCasasJardins => "Transferindo para o relacionamento com o cliente. Um momento, por favor.",
                 _ => "Transferindo. Aguarde."

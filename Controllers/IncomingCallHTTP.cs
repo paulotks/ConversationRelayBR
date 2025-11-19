@@ -47,12 +47,21 @@ namespace ConversartionRelayBR.Controllers
                 int.TryParse(HandoffData, out int option) &&
                 Enum.IsDefined(typeof(IvrOption), option))
             {
-                var url = GetQueueUrl((IvrOption)option);
+                var ivrOption = (IvrOption)option;
 
-                response.Redirect(
-                    method: Twilio.Http.HttpMethod.Post,
-                    url: new Uri(url)
-                );
+                if (ivrOption == IvrOption.StandVendas)
+                {
+                    response.Dial("+556232828855");
+                }
+                else
+                {
+                    var url = GetQueueUrl(ivrOption);
+
+                    response.Redirect(
+                        method: Twilio.Http.HttpMethod.Post,
+                        url: new Uri(url)
+                    );
+                }
             }
             else
             {
@@ -71,12 +80,20 @@ namespace ConversartionRelayBR.Controllers
                 int.TryParse(HandoffData, out int option) &&
                 Enum.IsDefined(typeof(IvrOption), option))
             {
-                var url = GetQueueUrl((IvrOption)option);
+                var ivrOption = (IvrOption)option;
 
-                response.Redirect(
-                    method: Twilio.Http.HttpMethod.Post,
-                    url: new Uri(url)
-                );
+                if (ivrOption == IvrOption.StandVendas)
+                {
+                    response.Dial("+556232828855");
+                } else
+                {
+                    var url = GetQueueUrl(ivrOption);
+
+                    response.Redirect(
+                        method: Twilio.Http.HttpMethod.Post,
+                        url: new Uri(url)
+                    );
+                }
             }
             else
             {
@@ -95,7 +112,6 @@ namespace ConversartionRelayBR.Controllers
                 IvrOption.BoletosVencidos => "https://fgr.vize.solutions/socket/SoftphoneCall/EnqueueWithAction?Fila=64015fe7-baf8-ed11-8f6e-000d3a88fa9d",
                 IvrOption.ClienteCasasJardins => "https://fgr.vize.solutions/socket/SoftphoneCall/EnqueueWithAction?Fila=6d71c2a2-baf8-ed11-8f6e-000d3a88fa9d",
                 IvrOption.RelacionamentoCliente => "https://fgr.vize.solutions/socket/SoftphoneCall/EnqueueWithAction?Fila=d6ffad19-baf8-ed11-8f6e-000d3a88fa9d",
-                IvrOption.StandeVendas => "https://fgr.vize.solutions/socket/SoftphoneCall/EnqueueWithAction?Fila=XXXXXX", // ← DEFINA A FILA
                 IvrOption.AssistenciaTecnica => "https://fgr.vize.solutions/socket/SoftphoneCall/EnqueueWithAction?Fila=08f6ce0d-bbf8-ed11-8f6e-000d3a88fa9d",
                 _ => "https://fgr.vize.solutions/socket/SoftphoneCall/EnqueueWithAction?Fila=08f6ce0d-bbf8-ed11-8f6e-000d3a88fa9d"
             };
