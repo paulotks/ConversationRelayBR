@@ -14,7 +14,6 @@ namespace ConversartionRelayBR.Services
         private int _attemptCount = 0;
         private Timer? _waitTimer;
 
-
         public async Task ProcessMessageAsync(WebSocket webSocket, string jsonMessage)
         {
             var incomingMessage = _webSocketService.DesserializeIncomingMessage(jsonMessage);
@@ -75,9 +74,7 @@ namespace ConversartionRelayBR.Services
             {
                 await HandleUnrecognizedInputAsync(webSocket);
             }
-
         }
-
         private async Task HandleDtmfAsync(WebSocket webSocket, DtmfMessage dtmf)
         {
             Console.WriteLine($"Cliente pressionou a tecla: {dtmf.Digit}");
@@ -100,20 +97,52 @@ namespace ConversartionRelayBR.Services
         {
             var input = userInput.ToLowerInvariant();
 
-            return input switch
-            {
-                var text when text.Contains("extrato") || text.Contains("boleto") || text.Contains("pagamento")
-                    => IvrOption.BoletosVencidos,
-                var text when text.Contains("relacionamento") || text.Contains("cliente") || text.Contains("reclamação")
-                    => IvrOption.RelacionamentoCliente,
-                var text when text.Contains("comercial") || text.Contains("vendas") || text.Contains("comprar")
-                    => IvrOption.StandeVendas,
-                var text when text.Contains("assistência") || text.Contains("técnica") || text.Contains("problema") || text.Contains("manutenção")
-                    => IvrOption.AssistenciaTecnica,
-                var text when text.Contains("dúvida") || text.Contains("empreendimento") || text.Contains("informação") || text.Contains("projeto")
-                    => IvrOption.RelacionamentoCliente,
-                _ => null
-            };
+            // Opção 1: Boletos Vencidos (Financeiro/Cobrança)
+            if (ContainsAny(input, "boleto", "vencido","em aberto", "negociar", "renegociar", "parcelar", "vencimento", "pagamento", "pagar", "débito", "dívida", "cobrança", "financeiro", "extrato", "fatura"))
+                return IvrOption.BoletosVencidos;
+
+            // Opção 2: Cliente Casas Jardins
+            if (ContainsAny(input, "casas jardins", "casa jardim", "meu empreendimento", "minha casa", "meu imóvel", "entrega", "iptu", "vistoria", "visita"))
+                return IvrOption.ClienteCasasJardins;
+
+            // Opção 3: Relacionamento com Cliente (Atendimento geral, dúvidas, extratos a vencer)
+            if (ContainsAny(input, "relacionamento", "atendimento", "atender", "cliente", "dúvida", "informação", "reclamação", "sugestão", "elogio", "boleto a vencer", "extrato", "segunda via", "contrato", "documentação", "projeto", "lote", "balão"))
+                return IvrOption.RelacionamentoCliente;
+
+            // Opção 4: Stande de Vendas (Comercial/Comprar)
+            if (ContainsAny(input, "comprar", "compra", "vendas", "venda", "comercial", "corretor", "stand", "stande", "adquirir", "aquisição", "interesse", "novo", "lançamento"))
+                return IvrOption.StandeVendas;
+
+            // Opção 5: Assistência Técnica (Pós-entrega - Problemas/Manutenção)
+            if (ContainsAny(input, "assistência", "chamado", "agendamento", "projetos", "danificado", "reforma", "elétrica", "técnica", "problema", "defeito", "manutenção", "reparo", "conserto", "quebrado", "vazamento", "infiltração", "pós-entrega", "pós entrega"))
+                return IvrOption.AssistenciaTecnica;
+
+            // Palavras-chave numéricas (caso o usuário fale o número)
+            if (ContainsAny(input, "um", "número um", "opção um", "1"))
+                return IvrOption.BoletosVencidos;
+
+            if (ContainsAny(input, "dois", "número dois", "opção dois", "2"))
+                return IvrOption.ClienteCasasJardins;
+
+            if (ContainsAny(input, "três", "número três", "opção três", "3"))
+                return IvrOption.RelacionamentoCliente;
+
+            if (ContainsAny(input, "quatro", "número quatro", "opção quatro", "4"))
+                return IvrOption.StandeVendas;
+
+            if (ContainsAny(input, "cinco", "número cinco", "opção cinco", "5"))
+                return IvrOption.AssistenciaTecnica;
+
+            // Transferência para atendente humano
+            if (ContainsAny(input, "atendente", "humano", "pessoa", "falar com alguém", "operador", "recepcão", "recepção"))
+                return IvrOption.Recepcao;
+
+            return null;
+        }
+
+        private static bool ContainsAny(string input, params string[] keywords)
+        {
+            return keywords.Any(keyword => input.Contains(keyword));
         }
 
         private async Task ProcessValidIntentAsync(WebSocket webSocket, IvrOption intent)
@@ -167,11 +196,11 @@ namespace ConversartionRelayBR.Services
             var optionsMessage = new TextMessage
             {
                 Token = "Por favor escolha uma das opções a seguir pressionando o número correspondente:" +
-                " 1 para boletos vencidos." +
-                " 2 para informações sobre o seu empreendimento casas jardins." +
-                " 3 para relacionamento com o cliente incluindo boletos a vencer e extratos de pagamento." +
-                " 4 para o setor comercial para falar com nosso stand de vendas ou com um corretor." +
-                " 5 para assistência técnica. " +
+                " Um para boletos vencidos." +
+                " Dois para informações sobre o seu empreendimento casas jardins." +
+                " Três para relacionamento com o cliente incluindo boletos a vencer e extratos de pagamento." +
+                " Quatro para o setor comercial para falar com nosso stand de vendas ou com um corretor." +
+                " Cinco para assistência técnica. " +
                 " Se nenhuma dessas opções atender à sua necessidade, aguarde. Em instantes, um de nossos atendentes falará com você." +
                 "Ao longo de 36 anos, a FGR se tornou especialista em condomínios horizontais, e agora, com o projeto da construção de Casas nos Jardins, criamos o melhor lugar para as pessoas serem felizes. Para obter mais informações, acesse nosso site ou aplicativo FGR Jardins. FGR Incorporações, mudando vidas."
             };
