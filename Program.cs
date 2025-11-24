@@ -1,4 +1,6 @@
+using ConversartionRelayBR.Models.WebSocket.TwilioSettings;
 using ConversartionRelayBR.Services;
+using Microsoft.Extensions.Options;
 using Twilio;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,18 +10,16 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<WebSocketService>();
 builder.Services.AddScoped<ConversationService>();
 
+builder.Services.Configure<TwilioSettings>(
+    builder.Configuration.GetSection("TwilioSettings")
+);
+
+
 var app = builder.Build();
 
-var accountSid = app.Configuration["TWILIO_ACCOUNT_SID"];
-var authToken = app.Configuration["TWILIO_AUTH_TOKEN"];
+var twilioSettings = app.Services.GetRequiredService<IOptions<TwilioSettings>>().Value;
 
-// Validate configuration
-if (string.IsNullOrEmpty(accountSid) || string.IsNullOrEmpty(authToken))
-{
-    throw new InvalidOperationException("Twilio credentials not found in configuration. Please check your appsettings.json file.");
-}
 
-TwilioClient.Init(accountSid, authToken);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

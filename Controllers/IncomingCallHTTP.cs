@@ -1,13 +1,24 @@
-﻿using ConversartionRelayBR.Models.Enums;
+﻿using ConversartionRelayBR.Filters;
+using ConversartionRelayBR.Models.Enums;
+using ConversartionRelayBR.Models.WebSocket.TwilioSettings;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Twilio.TwiML;
 using Twilio.TwiML.Voice;
 
 namespace ConversartionRelayBR.Controllers
 {
     [Route("/")]
+    [ValidateTwilioRequest]
     public class IncomingCallHTTP : Controller
     {
+        private readonly TwilioSettings _twilioSettings;
+
+        public IncomingCallHTTP(IOptions<TwilioSettings> twilioSettings)
+        {
+            _twilioSettings = twilioSettings.Value;
+        }
+
         [HttpPost]
         public IActionResult IncomingCallTwilioHTTP()
         {
@@ -18,7 +29,7 @@ namespace ConversartionRelayBR.Controllers
                 );
 
             var conversationRelay = new ConversationRelay(
-                url: "wss://telma-unswitched-walton.ngrok-free.dev/websocket",
+                url: _twilioSettings.WebSocketUrl,
                 welcomeGreeting: "Obrigado por entrar em contato com a FGR Incorporações.Em poucas palavras, me diga o motivo do seu contato… Ou aguarde para ouvir as opções.",
                 language:"pt-BR",
                 ttsProvider:"ElevenLabs",
@@ -28,7 +39,6 @@ namespace ConversartionRelayBR.Controllers
                 );
 
             //conversationRelay.Hints = "FGR,atendimento,conta corrente,poupança,cartão,empréstimo,financiamento,PIX,transferência,saldo,extrato,segunda via,cancelamento,bloqueio,desbloqueio,por favor,obrigada,com licença,desculpa,problema,dúvida,informação";
-
 
             connect.Append(conversationRelay);
             response.Append(connect);
@@ -51,7 +61,7 @@ namespace ConversartionRelayBR.Controllers
 
                 if (ivrOption == IvrOption.StandVendas)
                 {
-                    response.Dial("+556232828855");
+                    response.Dial(_twilioSettings.StandPhoneNumber);
                 }
                 else
                 {
@@ -84,7 +94,7 @@ namespace ConversartionRelayBR.Controllers
 
                 if (ivrOption == IvrOption.StandVendas)
                 {
-                    response.Dial("+556232828855");
+                    response.Dial(_twilioSettings.StandPhoneNumber);
                 } else
                 {
                     var url = GetQueueUrl(ivrOption);
@@ -105,15 +115,15 @@ namespace ConversartionRelayBR.Controllers
             return Content(response.ToString(), "application/xml");
         }
 
-        private static string GetQueueUrl(IvrOption option)
+        private string GetQueueUrl(IvrOption option)
         {
             return option switch
             {
-                IvrOption.BoletosVencidos => "https://fgr.vize.solutions/socket/SoftphoneCall/EnqueueWithAction?Fila=64015fe7-baf8-ed11-8f6e-000d3a88fa9d",
-                IvrOption.ClienteCasasJardins => "https://fgr.vize.solutions/socket/SoftphoneCall/EnqueueWithAction?Fila=6d71c2a2-baf8-ed11-8f6e-000d3a88fa9d",
-                IvrOption.RelacionamentoCliente => "https://fgr.vize.solutions/socket/SoftphoneCall/EnqueueWithAction?Fila=d6ffad19-baf8-ed11-8f6e-000d3a88fa9d",
-                IvrOption.AssistenciaTecnica => "https://fgr.vize.solutions/socket/SoftphoneCall/EnqueueWithAction?Fila=08f6ce0d-bbf8-ed11-8f6e-000d3a88fa9d",
-                _ => "https://fgr.vize.solutions/socket/SoftphoneCall/EnqueueWithAction?Fila=08f6ce0d-bbf8-ed11-8f6e-000d3a88fa9d"
+                IvrOption.BoletosVencidos => $"{_twilioSettings.SoftPhoneUrl}",
+                IvrOption.ClienteCasasJardins => $"{_twilioSettings.SoftPhoneUrl}",
+                IvrOption.RelacionamentoCliente => $"{_twilioSettings.SoftPhoneUrl}",
+                IvrOption.AssistenciaTecnica => $"{_twilioSettings.SoftPhoneUrl}",
+                _ => $"{_twilioSettings.SoftPhoneUrl}"
             };
         }
     }

@@ -64,7 +64,6 @@ namespace ConversartionRelayBR.Services
 
             Console.WriteLine($"Mensagem enviada: {json}");
         }
-
         public async Task EndSessionMessageAsync(WebSocket webSocket, EndMessage endMessage)
         {
             var json = SerializeEndSessionMessage(endMessage);
