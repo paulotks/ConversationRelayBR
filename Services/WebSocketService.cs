@@ -51,7 +51,7 @@ namespace ConversartionRelayBR.Services
             return JsonSerializer.Serialize(message, _jsonOptions);
         }
 
-        public async Task SendMessageAsync(WebSocket webSocket, TextMessage message)
+        public virtual async Task SendMessageAsync(WebSocket webSocket, TextMessage message)
         {
             var json = SerializeOutGoingMessage(message);
             var bytes = Encoding.UTF8.GetBytes(json);
@@ -64,7 +64,7 @@ namespace ConversartionRelayBR.Services
 
             Console.WriteLine($"Mensagem enviada: {json}");
         }
-        public async Task EndSessionMessageAsync(WebSocket webSocket, EndMessage endMessage)
+        public virtual async Task EndSessionMessageAsync(WebSocket webSocket, EndMessage endMessage)
         {
             var json = SerializeEndSessionMessage(endMessage);
             var bytes = Encoding.UTF8.GetBytes(json);

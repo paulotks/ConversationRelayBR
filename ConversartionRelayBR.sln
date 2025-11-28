@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36616.10 d17.14
+VisualStudioVersion = 17.14.36616.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConversartionRelayBR", "ConversartionRelayBR.csproj", "{AAF0B0FA-75EC-4276-BC48-2DECB40F1C6D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConversationRelayBR.test", "..\ConversationRelayBR.test\ConversationRelayBR.test.csproj", "{BEC65213-86E9-4A0B-B721-23A7BFB6096A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{AAF0B0FA-75EC-4276-BC48-2DECB40F1C6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAF0B0FA-75EC-4276-BC48-2DECB40F1C6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAF0B0FA-75EC-4276-BC48-2DECB40F1C6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEC65213-86E9-4A0B-B721-23A7BFB6096A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEC65213-86E9-4A0B-B721-23A7BFB6096A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEC65213-86E9-4A0B-B721-23A7BFB6096A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEC65213-86E9-4A0B-B721-23A7BFB6096A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -22,7 +22,6 @@ namespace ConversartionRelayBR.Filters
 
     internal class ValidateTwilioRequestFilter : IAsyncActionFilter
     {
-
         private readonly RequestValidator _requestValidator;
         private readonly TwilioSettings _twilioSettings;
         private readonly bool _isEnabled;

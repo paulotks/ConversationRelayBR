@@ -98,44 +98,47 @@ namespace ConversartionRelayBR.Services
             var input = userInput.ToLowerInvariant();
 
             // Opção 1: Boletos Vencidos (Financeiro/Cobrança)
-            if (ContainsAny(input, "vencido", "renegociar", "débito"))
+            if (ContainsAny(input, "vencido", "venceu", "renegociar", "débito"))
                 return IvrOption.BoletosVencidos;
 
             // Opção 2: Cliente Casas Jardins
             if (ContainsAny(input, "casas jardins", "casa jardim", "meu empreendimento", "minha casa", "meu imóvel", "entrega", "iptu", "vistoria", "visita"))
                 return IvrOption.ClienteCasasJardins;
 
-            // Opção 3: Relacionamento com Cliente (Atendimento geral, dúvidas, extratos a vencer)
-            if (ContainsAny(input, "relacionamento", "atendimento", "atender", "cliente", "dúvida", "informação", "reclamação", "sugestão", "elogio", "boleto a vencer", "extrato", "segunda via", "contrato", "documentação", "projeto", "lote", "balão"))
-                return IvrOption.RelacionamentoCliente;
-
             // Opção 4: Stande de Vendas (Comercial/Comprar)
             if (ContainsAny(input, "comprar", "compra", "vendas", "venda", "comercial", "corretor", "stand", "stande", "adquirir", "aquisição", "interesse", "novo", "lançamento"))
                 return IvrOption.StandVendas;
+
+            // Opção 3: Relacionamento com Cliente (Atendimento geral, dúvidas, extratos a vencer)
+            if (ContainsAny(input, "relacionamento", "atendimento", "atender", "cliente", "dúvida", "informação", "reclamação", "sugestão", "elogio", "boleto a vencer", "extrato", "segunda via", "contrato", "documentação", "projeto", "lote", "balão", "atendente", "humano", "pessoa", "falar com alguém", "operador", "recepcão", "recepção"))
+                return IvrOption.RelacionamentoCliente;
 
             // Opção 5: Assistência Técnica (Pós-entrega - Problemas/Manutenção)
             if (ContainsAny(input, "assistência", "chamado", "agendamento", "projetos", "danificado", "reforma", "elétrica", "técnica", "problema", "defeito", "manutenção", "reparo", "conserto", "quebrado", "vazamento", "infiltração", "pós-entrega", "pós entrega"))
                 return IvrOption.AssistenciaTecnica;
 
-            // Palavras-chave numéricas (caso o usuário fale o número)
-            if (ContainsAny(input, "um", "número um", "opção um", "1"))
-                return IvrOption.BoletosVencidos;
-
-            if (ContainsAny(input, "dois", "número dois", "opção dois", "2"))
-                return IvrOption.ClienteCasasJardins;
-
-            if (ContainsAny(input, "três", "número três", "opção três", "3"))
-                return IvrOption.RelacionamentoCliente;
-
-            if (ContainsAny(input, "quatro", "número quatro", "opção quatro", "4"))
-                return IvrOption.StandVendas;
-
-            if (ContainsAny(input, "cinco", "número cinco", "opção cinco", "5"))
-                return IvrOption.AssistenciaTecnica;
-
             // Transferência para atendente humano
-            if (ContainsAny(input, "atendente", "humano", "pessoa", "falar com alguém", "operador", "recepcão", "recepção"))
-                return IvrOption.Recepcao;
+            //if (ContainsAny(input, "atendente", "humano", "pessoa", "falar com alguém", "operador", "recepcão", "recepção"))
+            //    return IvrOption.Recepcao;
+
+            if (_currentState == CallFlowState.WaitingDTMF)
+            {
+                // Palavras-chave numéricas (caso o usuário fale o número)
+                if (ContainsAny(input, "um", "número um", "opção um", "1"))
+                    return IvrOption.BoletosVencidos;
+
+                if (ContainsAny(input, "dois", "número dois", "opção dois", "2"))
+                    return IvrOption.ClienteCasasJardins;
+
+                if (ContainsAny(input, "três", "número três", "opção três", "3"))
+                    return IvrOption.RelacionamentoCliente;
+
+                if (ContainsAny(input, "quatro", "número quatro", "opção quatro", "4"))
+                    return IvrOption.StandVendas;
+
+                if (ContainsAny(input, "cinco", "número cinco", "opção cinco", "5"))
+                    return IvrOption.AssistenciaTecnica;
+            }
 
             return null;
         }
