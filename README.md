@@ -23,6 +23,7 @@ Sistema de atendimento telefônico inteligente que integra com a Twilio para for
 ### Pré-requisitos
 - .NET 9 SDK
 - Conta Twilio ativa
+- URL pública acessível (ngrok ou servidor)
 
 ### Instalação
 
@@ -35,12 +36,12 @@ Sistema de atendimento telefônico inteligente que integra com a Twilio para for
 
 ### Fluxo de Atendimento
 1. Cliente liga e é conectado via WebSocket
-2. Sistema reproduz mensagem de boas-vindas
-3. Aguarda resposta do cliente (20s)
-4. Analisa a fala para identificar intenção
-5. Se não entender, oferece segunda chance (15s)
-6. Apresenta menu DTMF com opções numeradas
-7. Direciona para setor apropriado
+2. Sistema reproduz mensagem de boas-vindas (19s de espera)
+3. Analisa a fala para identificar intenção automaticamente
+4. Se não entender, oferece segunda chance (12s de espera)
+5. Apresenta menu DTMF completo com opções numeradas (45s de espera)
+6. Cliente escolhe via voz ou teclado
+7. Sistema transfere para o setor apropriado ou telefone direto
 
 ### Opções do IVR
 - **1** - Boletos Vencidos / Financeiro
@@ -48,28 +49,56 @@ Sistema de atendimento telefônico inteligente que integra com a Twilio para for
 - **3** - Relacionamento com Cliente  
 - **4** - Stande de Vendas / Comercial
 - **5** - Assistência Técnica
+- **Timeout** - Transfere automaticamente para recepção
 
 ### Palavras-Chave Reconhecidas
-- **Financeiro**: extrato, boleto, pagamento
-- **Relacionamento**: cliente, reclamação, dúvida
-- **Comercial**: vendas, comprar, comercial
-- **Técnica**: assistência, problema, manutenção
+**Financeiro (Opção 1):**
+- vencido, venceu, renegociar, débito
+
+**Casas Jardins (Opção 2):**
+- casas jardins, casa jardim, meu empreendimento, minha casa, meu imóvel, entrega, iptu, vistoria, visita
+
+**Relacionamento (Opção 3):**
+- relacionamento, atendimento, cliente, dúvida, informação, reclamação, sugestão, extrato, segunda via, contrato, documentação, boleto a vencer, atendente, humano, pessoa, operador
+
+**Comercial (Opção 4):**
+- comprar, compra, vendas, venda, comercial, corretor, stand, stande, adquirir, interesse, lançamento
+
+**Assistência Técnica (Opção 5):**
+- assistência, chamado, agendamento, problema, defeito, manutenção, reparo, conserto, vazamento, infiltração, pós-entrega, elétrica
+
+**Reconhecimento de números por voz (quando no menu DTMF):**
+- "um", "número um", "opção um" → Opção 1
+- "dois", "número dois", "opção dois" → Opção 2
+- E assim por diante...
 
 ## Estrutura do Projeto
-project-root/
+ConversationRelayBR/
 ├── Controllers/
-│   └── IncomingCallHTTP.cs     # Webhook
+│   └── IncomingCallHTTP.cs                  # Webhook e transferências
+│
 ├── Services/
-│   ├── WebSocketService.cs     # Gerencia WebSocket
-│   └── ConversationService.cs  # Lógica de conversa
+│   ├── WebSocketService.cs                  # Gerencia comunicação WebSocket
+│   └── ConversationService.cs               # Lógica de conversa e estados
+│
 ├── Models/
 │   ├── Enums/
-│   │   ├── CallFlowState.cs    # Estados do fluxo
-│   │   └── IvrOptions.cs       # Opções do menu
+│   │   ├── CallFlowState.cs                 # Estados do fluxo (6 estados)
+│   │   └── IvrOptions.cs                    # Opções do menu IVR
+│   │
 │   └── WebSocket/
-│       ├── Incoming/           # Mensagens recebidas
-│       └── Outgoing/           # Mensagens enviadas
-└── Program.cs                  # WebSocket
+│       ├── Incoming/                        # SetupMessage, PromptMessage, DtmfMessage
+│       ├── Outgoing/                        # TextMessage, EndMessage
+│       └── TwilioSettings/                  # Configurações Twilio
+│
+├── Filters/
+│   └── ValidateTwilioRequestAttribute.cs    # Autenticação de webhooks
+│
+├── ConversationRelayBR.Test/
+│   └── ConversationRelayServiceTests.cs     # Testes unitários
+│
+└── Program.cs                               # Configuração WebSocket e DI
+
 
 ## Endpoints
 
@@ -79,39 +108,69 @@ project-root/
 ## Licença
 Paulo Eduardo Furtado Lopes
 
-## Todo
-### Necessidade Técnicas
-- Implemmentar autenticação com a Twilio
-- Se Fluxo aprovado
-- - Implementar redirecionamento das chamadas
+## Segurança
 
+- Verificação de assinatura `X-Twilio-Signature`
+- Pode ser habilitada/desabilitada via `RequestValidationEnabled`
+- Usa `RequestValidator` oficial da Twilio SDK
 
-### Demandas Tecnicas
-- Implementar logs detalhados
-- Adicionar testes unitários
-- Melhorar tratamento de erros
-- Documentar API
-- Melhorar UX do menu IVR (Aguardar validação com cliente)
+## Testes
 
-### Deploy (Disponibilizar em um servidor)
-- Deploy WebSocket
-- Configurar CI/CD
+(xUnit + Moq)
+- Análise de intenções (todas as opções do IVR)
+- Validação de entrada DTMF
+- Reconhecimento de palavras-chave
+- Reconhecimento de números por voz no menu
+- Tratamento de entrada não reconhecida
 
+### Execute os Testes
+dotnet test
 
-### Perspectivas de Otimizações
-- Adicionar suporte a múltiplos idiomas
-- Adicionar suporte a chamadas internacionais
-- Adicionar integração com CRM
-- - Validar dados do cliente
-- - Automações (boleto, extrato, antecipação, agendamento de visita etc)
-- Implementar fallback para chamadas perdidas
-- Adicionar suporte a gravação de chamadas
-- Implementar análise de sentimentos na fala do cliente
-- Implementar análise de dados para melhorar o atendimento (Segunda etapa dos Logs)
-- Adicionar suporte a campanhas de marketing via voz
-- Implementar sistema de autenticação por voz para segurança (Alta complexidade)
-- Implementar painel administrativo para monitoramento (alta complexidade)
+## Roadmap
 
+### Em Desenvolvimento
+- Implementar logs detalhados estruturados (ILogger)
+- Melhorar tratamento de erros com retry strategies
+- Documentar API (Swagger/OpenAPI)
 
-## Primeira fase
+### Planejado - Deploy
+- Deploy em servidor de produção
+- Configurar CI/CD (GitHub Actions / Azure DevOps)
+- Monitoramento de chamadas em tempo real
+
+### Futuras Otimizações
+- **Melhorias de UX**:
+  - Menu IVR mais dinâmico baseado em feedback do cliente
+  - Mensagens personalizadas por horário/contexto
+  
+- **Integrações**:
+  - CRM para validação de dados do cliente
+  - Automações (envio de boleto, extrato, agendamentos)
+  - Sistema de tickets para assistência técnica
+  
+- **Analytics & IA**:
+  - Análise de sentimentos na fala do cliente
+  - Dashboard de métricas de atendimento
+  - Machine Learning para melhorar reconhecimento de intenções
+  
+- **Recursos Avançados**:
+  - Suporte a múltiplos idiomas
+  - Gravação e transcrição de chamadas
+  - Autenticação por voz para segurança
+  - Campanhas de marketing via voz
+  - Fallback automático para chamadas perdidas
+  - Painel administrativo para gestão
+
+## Contribuindo
+
+Projeto em desenvolvimento ativo. Para sugestões ou problemas, abra uma issue no repositório.
+
+## Status do Projeto
+
+🟢 **MVP Funcional** - Sistema pronto para testes em produção
+- ✅ Reconhecimento de voz e DTMF
+- ✅ Análise de intenções
+- ✅ Transferência de chamadas
+- ✅ Validação de segurança Twilio
+- ✅ Testes unitários básicos
 
