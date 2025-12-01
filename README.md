@@ -72,34 +72,6 @@ Sistema de atendimento telefônico inteligente que integra com a Twilio para for
 - "dois", "número dois", "opção dois" → Opção 2
 - E assim por diante...
 
-## Estrutura do Projeto
-ConversationRelayBR/
-├── Controllers/
-│   └── IncomingCallHTTP.cs                  # Webhook e transferências
-│
-├── Services/
-│   ├── WebSocketService.cs                  # Gerencia comunicação WebSocket
-│   └── ConversationService.cs               # Lógica de conversa e estados
-│
-├── Models/
-│   ├── Enums/
-│   │   ├── CallFlowState.cs                 # Estados do fluxo (6 estados)
-│   │   └── IvrOptions.cs                    # Opções do menu IVR
-│   │
-│   └── WebSocket/
-│       ├── Incoming/                        # SetupMessage, PromptMessage, DtmfMessage
-│       ├── Outgoing/                        # TextMessage, EndMessage
-│       └── TwilioSettings/                  # Configurações Twilio
-│
-├── Filters/
-│   └── ValidateTwilioRequestAttribute.cs    # Autenticação de webhooks
-│
-├── ConversationRelayBR.Test/
-│   └── ConversationRelayServiceTests.cs     # Testes unitários
-│
-└── Program.cs                               # Configuração WebSocket e DI
-
-
 ## Endpoints
 
 - **POST /** - Webhook para chamadas Twilio
