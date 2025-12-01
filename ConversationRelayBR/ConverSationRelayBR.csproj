@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -9,22 +9,18 @@
   <ItemGroup>
     <Compile Remove="Models\NewFolder1\**" />
     <Compile Remove="Models\NewFolder\**" />
-    <Compile Remove="NewFolder\**" />
     <Compile Remove="Views\Home\**" />
     <Compile Remove="Views\Shared\**" />
     <Content Remove="Models\NewFolder1\**" />
     <Content Remove="Models\NewFolder\**" />
-    <Content Remove="NewFolder\**" />
     <Content Remove="Views\Home\**" />
     <Content Remove="Views\Shared\**" />
     <EmbeddedResource Remove="Models\NewFolder1\**" />
     <EmbeddedResource Remove="Models\NewFolder\**" />
-    <EmbeddedResource Remove="NewFolder\**" />
     <EmbeddedResource Remove="Views\Home\**" />
     <EmbeddedResource Remove="Views\Shared\**" />
     <None Remove="Models\NewFolder1\**" />
     <None Remove="Models\NewFolder\**" />
-    <None Remove="NewFolder\**" />
     <None Remove="Views\Home\**" />
     <None Remove="Views\Shared\**" />
   </ItemGroup>
