@@ -36,8 +36,6 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapStaticAssets();
-
 app.MapControllers();
 
 app.Map("/websocket", async (HttpContext context) =>
