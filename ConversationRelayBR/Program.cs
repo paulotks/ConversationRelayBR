@@ -5,27 +5,23 @@ using Twilio;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddSingleton<WebSocketService>();
 builder.Services.AddScoped<ConversationService>();
+builder.Services.AddHealthChecks();
 
 builder.Services.Configure<TwilioSettings>(
     builder.Configuration.GetSection("TwilioSettings")
 );
 
-
 var app = builder.Build();
 
 var twilioSettings = app.Services.GetRequiredService<IOptions<TwilioSettings>>().Value;
-
-
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -37,6 +33,8 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHealthChecks("/health");
 
 app.Map("/websocket", async (HttpContext context) =>
 {
